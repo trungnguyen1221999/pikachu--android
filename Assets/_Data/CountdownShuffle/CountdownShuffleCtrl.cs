@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,10 +52,12 @@ public class CountdownShuffleCtrl : SaiMonoBehaviour
     {
         base.Start();
         timeRemaining = maxTimer;
-        if (InputManager.Instance.isDebug)
-        {
-            isCountingDown = true;
-        }
+
+        // Bỏ điều kiện debug, luôn đếm ngược khi game start
+        isCountingDown = true;
+
+        // Ẩn UI nếu cần (tuỳ ý)
+        ShowingUI(false);
     }
 
     protected virtual void Update()
@@ -80,9 +82,22 @@ public class CountdownShuffleCtrl : SaiMonoBehaviour
             return;
         }
 
+        // Khi hết thời gian
+        // Kiểm tra nếu chưa thắng thì chuyển GameOver
+        if (GridManagerCtrl.Instance.gridSystem.blocksRemain > 0)
+        {
+            // Chưa thắng mà hết thời gian -> Game Over
+            GameManager.Instance.ChangeState(GameState.GameOver);
+            isCountingDown = false;  // dừng đếm
+            ShowingUI(false);
+            return;
+        }
+
+        // Nếu thắng rồi hoặc không còn block nào thì shuffle như bình thường
         ShuffleTrigger();
         timeRemaining = maxTimer;
     }
+
 
     private static void ShuffleTrigger()
     {

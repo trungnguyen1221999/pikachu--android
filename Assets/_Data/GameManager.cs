@@ -1,7 +1,6 @@
 ﻿using com.cyborgAssets.inspectorButtonPro;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,27 +12,15 @@ public enum GameState
     Victory
 }
 
-public enum GameMode
-{
-    Classic,
-    Full
-}
-
 public class GameManager : SaiSingleton<GameManager>
 {
     protected GameState currentState;
     public GameState CurrentState => currentState;
 
-    protected GameMode currentMode;
-    public GameMode CurrentMode => currentMode;
-
-    protected GameModeData modeData = new GameModeData();
-    public GameModeData ModeData => modeData;
-
     #region Game Logic Variables
     private bool isCountdownShuffle = false;
 
-    [SerializeField] protected int maxLevel = 0;
+    [SerializeField] protected int maxLevel = 10; // Tổng 10 màn
     [SerializeField] protected int gameLevel = 1;
     [SerializeField] protected int remainShuffle = 9;
     public int RemainShuffle => remainShuffle;
@@ -44,7 +31,7 @@ public class GameManager : SaiSingleton<GameManager>
     public int CurrentLevel => gameLevel;
     #endregion
 
-    // Event
+    // Events
     public event Action OnGameOver;
     public event Action OnFinishGame;
     public event Action<GameState> OnGameStateChanged;
@@ -78,7 +65,7 @@ public class GameManager : SaiSingleton<GameManager>
         }
         else
         {
-            this.StartNewGame();
+            StartNewGame();
         }
     }
 
@@ -95,11 +82,9 @@ public class GameManager : SaiSingleton<GameManager>
 
     protected virtual void ExitCurrentState()
     {
-        switch (currentState)
+        if (currentState == GameState.Playing)
         {
-            case GameState.Playing:
-                // Clean up any ongoing game processes
-                break;
+            // Cleanup if needed
         }
     }
 
@@ -108,10 +93,8 @@ public class GameManager : SaiSingleton<GameManager>
         switch (currentState)
         {
             case GameState.MainMenu:
-                //ResetGameData();
                 break;
             case GameState.Playing:
-                //StartCoroutine(WaitForGameSceneLoad());
                 break;
             case GameState.GameOver:
                 HandleGameOver();
@@ -140,13 +123,13 @@ public class GameManager : SaiSingleton<GameManager>
         }
 
         InitializeData();
-        this.ChangeState(GameState.Playing);
+        ChangeState(GameState.Playing);
     }
 
     protected virtual void CheckShouldCountdownShuffle()
     {
         if (isCountdownShuffle) return;
-        if (!InputManager.Instance.isDebug) return;
+        if (!IsDebugTouch()) return;
         if (CountdownShuffleCtrl.Instance == null) return;
         if (CountdownShuffleCtrl.Instance.IsCountingDown()) return;
 
@@ -154,60 +137,52 @@ public class GameManager : SaiSingleton<GameManager>
         isCountdownShuffle = true;
     }
 
+    /// <summary>
+    /// Kiểm tra người chơi có tương tác debug: click chuột (PC) hoặc tap màn hình (mobile).
+    /// </summary>
+    protected virtual bool IsDebugTouch()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        return Input.GetMouseButtonDown(0); // Click chuột trái
+#else
+        return Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began; // Tap trên mobile
+#endif
+    }
+
     [ProButton]
     public virtual void NextLevel()
     {
-        this.gameLevel++;
+        gameLevel++;
 
-        if (currentMode == GameMode.Classic && this.gameLevel == 6)
+        if (gameLevel > maxLevel)
         {
-            // Convert from 6 to 10 for classic mode
-            this.gameLevel = 10;
+            gameLevel = 1;
         }
 
-        if(currentMode == GameMode.Full)
-        {
-            AddMoreHint(modeData.hintEachLevel);
-            AddMoreShuffle(modeData.shuffleEachLevel);
-        }
-
-        if (this.gameLevel > this.maxLevel) this.gameLevel = 1;
         StartCoroutine(WaitForGameSceneLoad());
-    }
-
-    protected virtual void LoadMaxLevel()
-    {
-        this.maxLevel = GridManagerCtrl.Instance.gameLevel.Levels.Count;
     }
 
     public virtual void UseHint()
     {
-        this.remainHint--;
-        if (this.remainHint < 0) this.remainHint = 0;
+        remainHint--;
+        if (remainHint < 0) remainHint = 0;
     }
 
     public virtual void UseShuffle()
     {
-        this.remainShuffle--;
-        if (this.remainShuffle < 0) this.remainShuffle = 0;
+        remainShuffle--;
+        if (remainShuffle < 0) remainShuffle = 0;
     }
 
     public virtual void AddMoreHint(int hintNum)
     {
-        this.remainHint += hintNum;
+        remainHint += hintNum;
     }
 
     public virtual void AddMoreShuffle(int shuffleNum)
     {
-        this.remainShuffle += shuffleNum;
+        remainShuffle += shuffleNum;
     }
-
-    public virtual void SetGameMode(GameMode mode)
-    {
-        this.currentMode = mode;
-    }
-
-    #region Game State Handlers
 
     protected virtual void CheckGameStatus()
     {
@@ -220,7 +195,6 @@ public class GameManager : SaiSingleton<GameManager>
         {
             ChangeState(GameState.Victory);
         }
-
         else if (noMovesLeft && blocksRemain > 0)
         {
             ChangeState(GameState.GameOver);
@@ -244,35 +218,28 @@ public class GameManager : SaiSingleton<GameManager>
         SoundManager.Instance?.PlaySound(SoundManager.Sound.win);
     }
 
-    #endregion
-
     public virtual void ResetGameOverState()
     {
-        if(currentMode == GameMode.Classic)
-        {
-            remainShuffle = modeData.shuffleClassic;
-            remainHint = modeData.hintClassic;
-        }
-
-        if(currentMode == GameMode.Full)
-        {
-            remainShuffle = modeData.shuffleFull;
-            remainHint = modeData.hintFull;
-        }
+        remainShuffle = 9;
+        remainHint = 9;
         gameLevel = 1;
 
-        // Clear all event listeners
         OnGameOver = null;
         OnFinishGame = null;
     }
 
     protected virtual void InitializeData()
     {
-        this.LoadMaxLevel();
+        LoadMaxLevel();
         isCountdownShuffle = false;
     }
 
-    #region event registration
+    protected virtual void LoadMaxLevel()
+    {
+        maxLevel = 10; // Đặt cố định 10 màn
+    }
+
+    #region Event Registration
     protected override void OnEnable()
     {
         base.OnEnable();

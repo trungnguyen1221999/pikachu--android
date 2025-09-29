@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class BtnLevelsContainer : SaiMonoBehaviour
@@ -10,11 +8,7 @@ public class BtnLevelsContainer : SaiMonoBehaviour
     protected override void Start()
     {
         base.Start();
-
-        if(GameManager.Instance.CurrentMode == GameMode.Classic)
-        {
-            HideHighLevelButtons();
-        }
+        HideHighLevelButtons(); // Luôn thực hiện ẩn các level cao (6–9)
     }
 
     private void HideHighLevelButtons()
@@ -36,7 +30,7 @@ public class BtnLevelsContainer : SaiMonoBehaviour
 
     private void LoadButtons()
     {
-        if(this.levels.Count > 0) return;
+        if (this.levels.Count > 0) return;
         this.levels.Clear();
         BtnLevel[] btnLevels = GetComponentsInChildren<BtnLevel>();
         foreach (var btnLevel in btnLevels)
