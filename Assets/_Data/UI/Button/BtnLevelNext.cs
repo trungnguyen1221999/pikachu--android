@@ -12,7 +12,6 @@ public class BtnLevelNext : BaseButton
 
     protected override void OnClick()
     {
-        GameManager.Instance.NextLevel();
     }
 
     protected virtual void LevelStatus()

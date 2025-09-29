@@ -6,6 +6,5 @@ public class BtnMoveBlocks : BaseButton
 {
     protected override void OnClick()
     {
-        GridManagerCtrl.Instance.gameLevel.GetCurrentLevelObj().MoveBlocks();
     }
 }

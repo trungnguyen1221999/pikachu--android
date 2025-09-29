@@ -20,21 +20,20 @@ public class GameManager : SaiSingleton<GameManager>
     #region Game Logic Variables
     private bool isCountdownShuffle = false;
 
-    [SerializeField] protected int maxLevel = 10; // Tổng 10 màn
-    [SerializeField] protected int gameLevel = 1;
     [SerializeField] protected int remainShuffle = 9;
     public int RemainShuffle => remainShuffle;
 
     [SerializeField] protected int remainHint = 9;
     public int RemainHint => remainHint;
 
-    public int CurrentLevel => gameLevel;
     #endregion
 
     // Events
     public event Action OnGameOver;
     public event Action OnFinishGame;
     public event Action<GameState> OnGameStateChanged;
+
+    [SerializeField] private GameObject winPanel; // Tham chiếu WinPanel ở Inspector
 
     protected override void Start()
     {
@@ -95,6 +94,7 @@ public class GameManager : SaiSingleton<GameManager>
             case GameState.MainMenu:
                 break;
             case GameState.Playing:
+                if (winPanel != null) winPanel.SetActive(false); // Ẩn WinPanel lúc chơi
                 break;
             case GameState.GameOver:
                 HandleGameOver();
@@ -108,20 +108,8 @@ public class GameManager : SaiSingleton<GameManager>
 
     public virtual void StartNewGame()
     {
-        StartCoroutine(WaitForGameSceneLoad());
-    }
-
-    protected virtual IEnumerator WaitForGameSceneLoad()
-    {
-        SceneManager.LoadScene("game");
-
-        yield return null;
-
-        while (GridManagerCtrl.Instance == null || GridManagerCtrl.Instance.gridSystem.blocksRemain == 0)
-        {
-            yield return null;
-        }
-
+        // Nếu bạn load scene game mới, gọi scene load ở đây
+        // Nếu chỉ có 1 level, bạn có thể chỉ reset lại dữ liệu mà thôi
         InitializeData();
         ChangeState(GameState.Playing);
     }
@@ -147,19 +135,6 @@ public class GameManager : SaiSingleton<GameManager>
 #else
         return Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began; // Tap trên mobile
 #endif
-    }
-
-    [ProButton]
-    public virtual void NextLevel()
-    {
-        gameLevel++;
-
-        if (gameLevel > maxLevel)
-        {
-            gameLevel = 1;
-        }
-
-        StartCoroutine(WaitForGameSceneLoad());
     }
 
     public virtual void UseHint()
@@ -209,20 +184,18 @@ public class GameManager : SaiSingleton<GameManager>
 
     protected virtual void HandleVictory()
     {
-        if (gameLevel == maxLevel)
+        if (winPanel != null)
         {
-            OnFinishGame?.Invoke();
-            return;
+            winPanel.SetActive(true);
         }
-
         SoundManager.Instance?.PlaySound(SoundManager.Sound.win);
+        OnFinishGame?.Invoke();
     }
 
     public virtual void ResetGameOverState()
     {
         remainShuffle = 9;
         remainHint = 9;
-        gameLevel = 1;
 
         OnGameOver = null;
         OnFinishGame = null;
@@ -230,13 +203,12 @@ public class GameManager : SaiSingleton<GameManager>
 
     protected virtual void InitializeData()
     {
-        LoadMaxLevel();
+        remainShuffle = 9;
+        remainHint = 9;
         isCountdownShuffle = false;
-    }
 
-    protected virtual void LoadMaxLevel()
-    {
-        maxLevel = 10; // Đặt cố định 10 màn
+        if (winPanel != null)
+            winPanel.SetActive(false);
     }
 
     #region Event Registration

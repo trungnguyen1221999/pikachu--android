@@ -48,6 +48,5 @@ public class BtnLevel : BaseButton
 
     protected virtual void LevelStatus()
     {
-        this.button.interactable = GameManager.Instance.CurrentLevel == this.level;
     }
 }

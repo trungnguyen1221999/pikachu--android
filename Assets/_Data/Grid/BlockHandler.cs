@@ -84,7 +84,6 @@ public class BlockHandler : GridAbstract
         this.ctrl.gridSystem.NodeFree(this.secondBlock.blockData.node);
 
         this.Unchoose();
-        this.ctrl.gameLevel.GetCurrentLevelObj().MoveBlocks();
         this.ctrl.blockAuto.CheckNextBlock();
     }
 
