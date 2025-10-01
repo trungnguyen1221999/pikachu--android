@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,5 +35,12 @@ public class UIFinishGame : SaiMonoBehaviour
     {
         container.SetActive(true);
         winFx.SetActive(true);
+    }
+
+    // ✅ HÀM MỚI: Dùng để ẩn UI khi restart game
+    public void HideUI()
+    {
+        if (container != null) container.SetActive(false);
+        if (winFx != null) winFx.SetActive(false);
     }
 }
