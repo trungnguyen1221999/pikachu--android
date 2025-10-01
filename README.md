@@ -14,9 +14,9 @@ A fun and nostalgic **Pikachu tile-matching game**, built with ❤️ using **Un
 📱 Platform: **Android**
 
 ---
-![image](https://drive.google.com/file/d/1rosUPqNtq-vqnBt1keFL4ckSROQQzTBZ/view?usp=drive_link)
-![image](https://drive.google.com/file/d/1JKudulz4IKecsZWpnY9Pe4z48WeOelwP/view?usp=drive_link)
-![image](https://drive.google.com/file/d/1R7ww3LWkuUfd5qF_mejvWSAivQI4H_Q_/view?usp=drive_link)
+![image](https://imgur.com/FB2NbPQ)
+![image](https://imgur.com/PQQN37R)
+
 
 ## 🎮 Game Description
 
